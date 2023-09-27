@@ -1,0 +1,16 @@
+
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.crt
+*.key
+
+*.test
+
+*.out
+srv
+.idea
+.idea/
+.idea/workspace.xml
