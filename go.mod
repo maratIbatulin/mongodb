@@ -1,6 +1,6 @@
 module github.com/maratIbatulin/mongodb
 
-go 1.21
+go 1.19
 
 require (
 	go.mongodb.org/mongo-driver v1.12.1
