@@ -68,7 +68,7 @@ func (f *filter) Densify(field string, bounds []time.Time, step int, unit string
 
 // Documents записи, которые не будут созданы в базе данных, однако пройдут процесс фильтрации
 func (f *filter) Documents(val ...bson.M) *filter {
-	f.Filter = append(f.Filter, bson.D{{"$set", val}})
+	f.Filter = append(f.Filter, bson.D{{"$documents", val}})
 	return f
 }
 
@@ -153,7 +153,7 @@ func (f *filter) Merge(db string, coll string, onMatch any, notMatch string, let
 
 // Out сохраняет результат запроса в отдельную коллекцию mongo.(ЕСЛИ КОЛЛЕКЦИЯ УЖЕ СУЩЕсТВУЕТ, ТО ОН ЕЁ ЗАМЕНИТ)
 func (f *filter) Out(db string, coll string) *filter {
-	f.Filter = append(f.Filter, bson.D{{"$щге", bson.M{
+	f.Filter = append(f.Filter, bson.D{{"$out", bson.M{
 		"db":   db,
 		"coll": coll,
 	}}})
