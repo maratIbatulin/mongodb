@@ -22,7 +22,7 @@ func (f *filter) AddFields(val bson.M) *filter {
 }
 
 // Bucket распределение всех записей по нескольким категориям
-func (f *filter) Bucket(groupBy string, boundaries []int, def string, output bson.M) *filter {
+func (f *filter) Bucket(groupBy string, boundaries []any, def any, output bson.M) *filter {
 	f.Filter = append(f.Filter, bson.D{{"$bucket", bson.M{
 		"groupBy":    groupBy,
 		"boundaries": boundaries,
