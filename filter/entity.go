@@ -44,7 +44,7 @@ type Geo struct {
 
 type QueryFilter interface {
 	AddFields(val bson.M) *filter
-	Bucket(groupBy string, boundaries []int, def string, output bson.M) *filter
+	Bucket(groupBy string, boundaries []any, def any, output bson.M) *filter
 	BucketAuto(groupBy string, buckets int32, output bson.M, granularity string) *filter
 	Count(field string) *filter
 	Densify(field string, bounds []time.Time, step int, unit string, partitionByFields ...string) *filter
