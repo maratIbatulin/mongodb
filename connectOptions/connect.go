@@ -94,6 +94,16 @@ func (o *option) Acknowledged(acknow bool) *option {
 	return o
 }
 
+func (o *option) ReadConcern(level int) *option {
+	switch level {
+	case 1:
+		o.readConcern = readconcern.Available()
+	case 2:
+		o.readConcern = readconcern.Majority()
+	}
+	return o
+}
+
 func (o *option) Connect(db string) (*mongo.Database, *mongo.Client, error) {
 	clOps := &options.ClientOptions{
 		AppName:      o.appName,
