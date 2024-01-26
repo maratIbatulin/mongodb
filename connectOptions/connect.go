@@ -32,7 +32,7 @@ func (o *option) Default(appName string) *option {
 		retryWrites:            false,
 		serverSelectionTimeout: &timeout,
 		timeout:                &timeout,
-		writeConcern:           writeconcern.New(writeconcern.W(0), writeconcern.J(false)),
+		writeConcern:           writeconcern.Unacknowledged(),
 		zlibLevel:              &zLevel,
 		zstdLevel:              &zLevel,
 	}
@@ -90,7 +90,12 @@ func (o *option) Timeout(dur time.Duration) *option {
 
 // Acknowledged is all mongo request will wait answer from mongod instance that operation was success or error
 func (o *option) Acknowledged(acknow bool) *option {
-	o.writeConcern.WithOptions(writeconcern.W(0), writeconcern.J(acknow))
+	switch acknow {
+	case false:
+		o.writeConcern = writeconcern.Unacknowledged()
+	case true:
+		o.writeConcern = writeconcern.W1()
+	}
 	return o
 }
 

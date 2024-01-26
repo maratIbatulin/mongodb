@@ -2,10 +2,10 @@ package mongo
 
 import (
 	"context"
-	"github.com/maratIbatulin/mongodb/collection"
-	. "github.com/maratIbatulin/mongodb/filter"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"mongo/collection"
+	. "mongo/filter"
 )
 
 type Collection interface {
