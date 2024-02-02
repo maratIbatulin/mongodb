@@ -84,7 +84,7 @@ func (c collection) InsertOne(ctx context.Context, body interface{}, opts ...*op
 	if err == mongo.ErrUnacknowledgedWrite {
 		return insertedId.InsertedID, nil
 	}
-	return insertedId.InsertedID, nil
+	return insertedId.InsertedID, err
 }
 
 // InsertMany default id type is primitive.ObjectID but you can insert int/string id's
