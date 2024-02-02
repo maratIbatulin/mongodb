@@ -4,8 +4,8 @@ import (
 	"context"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"mongo/collection"
-	. "mongo/filter"
+	"github.com/maratIbatulin/mongodb/collection"
+	. "github.com/maratIbatulin/mongodb/filter"
 )
 
 type Collection interface {
