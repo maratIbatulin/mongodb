@@ -68,4 +68,5 @@ type QueryFilter interface {
 	Unset(val ...string) *filter
 	Unwind(path string, preserveNullAndEmptyArrays bool) *filter
 	Use() mongo.Pipeline
+	Concat(filt QueryFilter) *filter
 }

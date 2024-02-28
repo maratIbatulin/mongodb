@@ -220,3 +220,12 @@ func (f *filter) Unwind(path string, preserveNullAndEmptyArrays bool) *filter {
 func (f *filter) Use() mongo.Pipeline {
 	return f.Filter
 }
+
+// Concat объединение двух фильтров в 1
+func (f *filter) Concat(filt QueryFilter) *filter {
+	fl := filt.(*filter)
+	for _, val := range fl.Filter {
+		f.Filter = append(f.Filter, val)
+	}
+	return f
+}
