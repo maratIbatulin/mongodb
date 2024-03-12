@@ -2,10 +2,10 @@ package mongo
 
 import (
 	"context"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"github.com/maratIbatulin/mongodb/collection"
 	. "github.com/maratIbatulin/mongodb/filter"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Collection interface {
@@ -17,10 +17,10 @@ type Collection interface {
 	Find(ctx context.Context, filter interface{}, opts ...*options.FindOptions) (*mongo.Cursor, error)
 	//InsertOne default id type is primitive.ObjectID but you can insert int/string id's
 	//body can be struct/map[string]interface{}/[]map[string]interface(struct/bson.M/bson.D)
-	InsertOne(ctx context.Context, body interface{}, opts ...*options.InsertOneOptions) (interface{}, error)
+	InsertOne(ctx context.Context, body interface{}, opts ...*options.InsertOneOptions) (*mongo.InsertOneResult, error)
 	//InsertMany default id type is primitive.ObjectID but you can insert int/string id's
 	//body can be struct/map[string]interface{}/[]map[string]interface(struct/bson.M/bson.D)
-	InsertMany(ctx context.Context, body []interface{}, opts ...*options.InsertManyOptions) ([]interface{}, error)
+	InsertMany(ctx context.Context, body []interface{}, opts ...*options.InsertManyOptions) (*mongo.InsertManyResult, error)
 	//UpdateOne filter and update can be struct/map[string]interface{}/[]map[string]interface(struct/bson.M/bson.D)
 	UpdateOne(ctx context.Context, filter interface{}, update interface{}, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error)
 	//UpdateMany can be struct/map[string]interface{}/[]map[string]interface(struct/bson.M/bson.D)
