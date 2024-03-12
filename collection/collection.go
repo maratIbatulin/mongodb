@@ -79,22 +79,22 @@ func (c collection) Find(ctx context.Context, filter interface{}, opts ...*optio
 }
 
 // InsertOne default id type is primitive.ObjectID but you can insert int/string id's
-func (c collection) InsertOne(ctx context.Context, body interface{}, opts ...*options.InsertOneOptions) (interface{}, error) {
+func (c collection) InsertOne(ctx context.Context, body interface{}, opts ...*options.InsertOneOptions) (*mongo.InsertOneResult, error) {
 	insertedId, err := c.coll.InsertOne(ctx, body, opts...)
 	if err == mongo.ErrUnacknowledgedWrite {
-		return insertedId.InsertedID, nil
+		return insertedId, nil
 	}
-	return insertedId.InsertedID, err
+	return insertedId, err
 }
 
 // InsertMany default id type is primitive.ObjectID but you can insert int/string id's
-func (c collection) InsertMany(ctx context.Context, body []interface{}, opts ...*options.InsertManyOptions) ([]interface{}, error) {
+func (c collection) InsertMany(ctx context.Context, body []interface{}, opts ...*options.InsertManyOptions) (*mongo.InsertManyResult, error) {
 	insertedId, err := c.coll.InsertMany(ctx, body, opts...)
 	if err == mongo.ErrUnacknowledgedWrite {
-		return insertedId.InsertedIDs, nil
+		return insertedId, nil
 	}
 
-	return insertedId.InsertedIDs, err
+	return insertedId, err
 }
 
 func (c collection) UpdateOne(ctx context.Context, filter interface{}, update interface{}, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
