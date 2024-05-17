@@ -166,6 +166,12 @@ func (f *filter) Project(val bson.M) *filter {
 	return f
 }
 
+// ReplaceRoot смена корня записи документа
+func (f *filter) ReplaceRoot(val string) *filter {
+	f.Filter = append(f.Filter, bson.D{{"$replaceRoot", bson.M{"newRoot": val}}})
+	return f
+}
+
 // Sample выборка случайных n записей из базы
 func (f *filter) Sample(size int64) *filter {
 	f.Filter = append(f.Filter, bson.D{{"$sample", bson.M{

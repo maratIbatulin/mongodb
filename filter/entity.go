@@ -60,6 +60,7 @@ type QueryFilter interface {
 	Merge(db string, coll string, onMatch any, notMatch string, let bson.M, on ...string) *filter
 	Out(db string, coll string) *filter
 	Project(val bson.M) *filter
+	ReplaceRoot(val string) *filter
 	Sample(size int64) *filter
 	Set(val bson.M) *filter
 	Skip(val int64) *filter
