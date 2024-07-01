@@ -13,4 +13,6 @@
 srv
 .idea
 .idea/
+
+main.go
 .idea/workspace.xml

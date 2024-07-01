@@ -1,28 +1,46 @@
 package mongo
 
 import (
+	"context"
+	"fmt"
 	"github.com/maratIbatulin/mongodb/collection"
 	connect "github.com/maratIbatulin/mongodb/connectOptions"
 	"github.com/maratIbatulin/mongodb/filter"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readconcern"
+	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 )
 
-type database struct {
+type DB struct {
 	db     *mongo.Database
 	client *mongo.Client
 }
 
-func Transaction() chan collection.Transaction {
-	return make(chan collection.Transaction, 1)
+type Tx struct {
+	db   *mongo.Database
+	sess mongo.Session
+	ctx  context.Context
 }
 
-func ConnectDB(connect connect.Opt, dbName string) (database, error) {
+func (d *DB) Transaction() *Tx {
+	sess, _ := d.client.StartSession(options.Session())
+	err := sess.StartTransaction(options.Transaction().SetWriteConcern(&writeconcern.WriteConcern{W: 1}).SetReadConcern(readconcern.Snapshot()))
+	fmt.Println(err)
+	return &Tx{
+		db:   d.db,
+		sess: sess,
+		ctx:  mongo.NewSessionContext(context.TODO(), sess),
+	}
+}
+
+func ConnectDB(connect connect.Opt, dbName string) (*DB, error) {
 	db, client, err := connect.Connect(dbName)
 	if err != nil {
-		return database{}, err
+		return nil, err
 	}
 
-	return database{db: db, client: client}, nil
+	return &DB{db: db, client: client}, nil
 }
 
 func Connection() connect.Opt {
@@ -33,6 +51,22 @@ func Filter() filter.QueryFilter {
 	return filter.New()
 }
 
-func (d database) Collection(name string) Collection {
-	return collection.New(d.db, d.client, name)
+func (d *DB) Collection(name string) Collection {
+	return collection.New(d.db, name, context.TODO())
+}
+
+func (tx *Tx) Collection(name string) Collection {
+	return collection.New(tx.db, name, tx.ctx)
+}
+
+func (tx *Tx) Rollback() error {
+	err := tx.sess.AbortTransaction(tx.ctx)
+	tx.sess.EndSession(tx.ctx)
+	return err
+}
+
+func (tx *Tx) Commit() error {
+	err := tx.sess.CommitTransaction(tx.ctx)
+	tx.sess.EndSession(tx.ctx)
+	return err
 }
