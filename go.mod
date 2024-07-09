@@ -1,4 +1,4 @@
-module mongodb
+module github.com/maratIbatulin/mongodb
 
 go 1.19
 

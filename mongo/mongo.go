@@ -3,12 +3,12 @@ package mongo
 import (
 	"context"
 	"fmt"
+	connect "github.com/maratIbatulin/mongodb/connectOptions"
+	"github.com/maratIbatulin/mongodb/filter"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readconcern"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
-	connect "mongodb/connectOptions"
-	"mongodb/filter"
 )
 
 type DB struct {
