@@ -13,7 +13,7 @@ type collection struct {
 }
 
 type Collection interface {
-	Aggregate(filter filter, opts ...*option.AggregateOptions) (*mongo.Cursor, error)
+	Aggregate(filter *filter, opts ...*option.AggregateOptions) (*mongo.Cursor, error)
 	FindOne(filter map[string]any, opts ...*option.FindOneOptions) *mongo.SingleResult
 	InsertOne(body any, opts ...*option.InsertOneOptions) (*mongo.InsertOneResult, error)
 	InsertMany(body []any, opts ...*option.InsertManyOptions) (*mongo.InsertManyResult, error)
@@ -25,8 +25,8 @@ type Collection interface {
 	Collection() *mongo.Collection
 }
 
-func (c collection) Aggregate(filter filter, opts ...*option.AggregateOptions) (*mongo.Cursor, error) {
-	cursor, err := c.coll.Aggregate(c.ctx, filter, opts...)
+func (c collection) Aggregate(filter *filter, opts ...*option.AggregateOptions) (*mongo.Cursor, error) {
+	cursor, err := c.coll.Aggregate(c.ctx, filter.Use(), opts...)
 	if errors.Is(err, mongo.ErrUnacknowledgedWrite) {
 		return cursor, nil
 	}

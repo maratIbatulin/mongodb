@@ -261,8 +261,8 @@ func (f *filter) Use() []bson.D {
 }
 
 // Concat объединение двух фильтров в 1
-func (f *filter) Concat(filt filter) *filter {
-	for _, val := range filt {
+func (f *filter) Concat(filt *filter) *filter {
+	for _, val := range *filt {
 		*f = append(*f, val)
 	}
 	return f
