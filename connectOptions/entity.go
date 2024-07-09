@@ -45,5 +45,5 @@ type Opt interface {
 	ServerTimeout(dur time.Duration) *option
 	Timeout(dur time.Duration) *option
 	Acknowledged(acknow bool) *option
-	Connect(db string) (*mongo.Database, *mongo.Client, error)
+	Connect(database string) (*mongo.Database, *mongo.Client, error)
 }

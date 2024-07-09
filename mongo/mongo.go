@@ -3,13 +3,12 @@ package mongo
 import (
 	"context"
 	"fmt"
-	"github.com/maratIbatulin/mongodb/collection"
-	connect "github.com/maratIbatulin/mongodb/connectOptions"
-	"github.com/maratIbatulin/mongodb/filter"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readconcern"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
+	connect "mongodb/connectOptions"
+	"mongodb/filter"
 )
 
 type DB struct {
@@ -52,11 +51,11 @@ func Filter() filter.QueryFilter {
 }
 
 func (d *DB) Collection(name string) Collection {
-	return collection.New(d.db, name, context.TODO())
+	return new(d.db, name, context.TODO())
 }
 
 func (tx *Tx) Collection(name string) Collection {
-	return collection.New(tx.db, name, tx.ctx)
+	return new(tx.db, name, tx.ctx)
 }
 
 func (tx *Tx) Rollback() error {

@@ -109,7 +109,7 @@ func (o *option) ReadConcern(level int) *option {
 	return o
 }
 
-func (o *option) Connect(db string) (*mongo.Database, *mongo.Client, error) {
+func (o *option) Connect(database string) (*mongo.Database, *mongo.Client, error) {
 	clOps := &options.ClientOptions{
 		AppName:      o.appName,
 		Auth:         o.auth,
@@ -135,6 +135,7 @@ func (o *option) Connect(db string) (*mongo.Database, *mongo.Client, error) {
 		return nil, nil, err
 	}
 
-	database := client.Database(db)
-	return database, client, err
+	db := client.Database(database)
+
+	return db, client, err
 }

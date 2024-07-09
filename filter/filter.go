@@ -16,13 +16,13 @@ func New() *filter {
 }
 
 // AddFields спецификация дополнительных полей, которые должны быть получены в результате запроса
-func (f *filter) AddFields(val bson.M) *filter {
+func (f *filter) AddFields(val map[string]interface{}) *filter {
 	f.Filter = append(f.Filter, bson.D{{"$addFields", val}})
 	return f
 }
 
 // Bucket распределение всех записей по нескольким категориям
-func (f *filter) Bucket(groupBy string, boundaries []any, def any, output bson.M) *filter {
+func (f *filter) Bucket(groupBy string, boundaries []any, def any, output map[string]interface{}) *filter {
 	f.Filter = append(f.Filter, bson.D{{"$bucket", bson.M{
 		"groupBy":    groupBy,
 		"boundaries": boundaries,
@@ -33,7 +33,7 @@ func (f *filter) Bucket(groupBy string, boundaries []any, def any, output bson.M
 }
 
 // BucketAuto распределение всех записей по конкретно заданному числу корзин
-func (f *filter) BucketAuto(groupBy string, buckets int32, output bson.M, granularity string) *filter {
+func (f *filter) BucketAuto(groupBy string, buckets int32, output map[string]interface{}, granularity string) *filter {
 	f.Filter = append(f.Filter, bson.D{{"$bucketAuto", bson.M{
 		"groupBy":     groupBy,
 		"buckets":     buckets,
@@ -67,7 +67,7 @@ func (f *filter) Densify(field string, bounds []time.Time, step int, unit string
 }
 
 // Documents записи, которые не будут созданы в базе данных, однако пройдут процесс фильтрации
-func (f *filter) Documents(val ...bson.M) *filter {
+func (f *filter) Documents(val ...map[string]interface{}) *filter {
 	f.Filter = append(f.Filter, bson.D{{"$documents", val}})
 	return f
 }
@@ -79,7 +79,7 @@ func (f *filter) Facet(val map[string]mongo.Pipeline) *filter {
 }
 
 // Fill заполнение полей без значений в записях
-func (f *filter) Fill(sortBy bson.M, output bson.M, partition ...string) *filter {
+func (f *filter) Fill(sortBy map[string]interface{}, output map[string]interface{}, partition ...string) *filter {
 	val := bson.M{
 		"sortBy": sortBy,
 		"output": output,
@@ -107,7 +107,7 @@ func (f *filter) GraphLookup(gl GraphLookup) *filter {
 }
 
 // Group объединение записей согласно некоторому набору параметров
-func (f *filter) Group(id any, fields bson.M) *filter {
+func (f *filter) Group(id any, fields map[string]interface{}) *filter {
 	fields["_id"] = id
 	f.Filter = append(f.Filter, bson.D{{"$group", fields}})
 	return f
@@ -126,13 +126,13 @@ func (f *filter) Lookup(val Lookup) *filter {
 }
 
 // Match спецификация для поиска записей согласно заданному фильтру
-func (f *filter) Match(val bson.M) *filter {
+func (f *filter) Match(val map[string]interface{}) *filter {
 	f.Filter = append(f.Filter, bson.D{{"$match", val}})
 	return f
 }
 
 // Merge объединение записей из одной коллекции с записями из другой коллекции
-func (f *filter) Merge(db string, coll string, onMatch any, notMatch string, let bson.M, on ...string) *filter {
+func (f *filter) Merge(db string, coll string, onMatch any, notMatch string, let map[string]interface{}, on ...string) *filter {
 	val := bson.M{
 		"into": bson.M{
 			"db":   db,
@@ -161,7 +161,7 @@ func (f *filter) Out(db string, coll string) *filter {
 }
 
 // Project спецификация полей, которые будут отображены
-func (f *filter) Project(val bson.M) *filter {
+func (f *filter) Project(val map[string]interface{}) *filter {
 	f.Filter = append(f.Filter, bson.D{{"$project", val}})
 	return f
 }
@@ -181,7 +181,7 @@ func (f *filter) Sample(size int64) *filter {
 }
 
 // Set изменяет значение поля/полей при их получении на установленное в фильтре
-func (f *filter) Set(val bson.M) *filter {
+func (f *filter) Set(val map[string]interface{}) *filter {
 	f.Filter = append(f.Filter, bson.D{{"$set", val}})
 	return f
 }
@@ -193,13 +193,13 @@ func (f *filter) Skip(val int64) *filter {
 }
 
 // Sort сортировка записей по полям в порядке убывания/возрастания
-func (f *filter) Sort(val bson.M) *filter {
+func (f *filter) Sort(val map[string]interface{}) *filter {
 	f.Filter = append(f.Filter, bson.D{{"$sort", val}})
 	return f
 }
 
 // UnionWith объединение записей из одной коллекции в другую с возможностью использования pipeline при слиянии
-func (f *filter) UnionWith(coll string, pipeline bson.M) *filter {
+func (f *filter) UnionWith(coll string, pipeline map[string]interface{}) *filter {
 	val := bson.M{
 		"coll": coll,
 	}
