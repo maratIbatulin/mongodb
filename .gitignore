@@ -13,6 +13,7 @@
 srv
 .idea
 .idea/
-
+mongodb
 main.go
+Makefile
 .idea/workspace.xml

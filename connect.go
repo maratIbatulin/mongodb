@@ -1,25 +1,37 @@
-package connect
+package mongo
 
 import (
 	"context"
+	"go.mongodb.org/mongo-driver/event"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	option "go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readconcern"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 	"time"
 )
 
-// Options create default connect options
-func Options() Opt {
-	opt := &option{}
-	return opt
+type options struct {
+	appName                *string
+	auth                   *option.Credential
+	hosts                  []string
+	maxPoolSize            uint64
+	minPoolSize            uint64
+	poolMonitor            *event.PoolMonitor
+	monitor                *event.CommandMonitor
+	readConcern            *readconcern.ReadConcern
+	replicaSet             *string
+	retryReads             bool
+	retryWrites            bool
+	serverSelectionTimeout *time.Duration
+	timeout                *time.Duration
+	writeConcern           *writeconcern.WriteConcern
 }
 
-func (o *option) Default(appName string) *option {
-	timeout := 10 * time.Second
-	zLevel := 1
-	*o = option{
-		appName:                &appName,
+var timeout time.Duration = 10 * time.Second
+
+func Options(app string) options {
+	return options{
+		appName:                &app,
 		auth:                   nil,
 		hosts:                  nil,
 		maxPoolSize:            100,
@@ -33,63 +45,60 @@ func (o *option) Default(appName string) *option {
 		serverSelectionTimeout: &timeout,
 		timeout:                &timeout,
 		writeConcern:           writeconcern.Unacknowledged(),
-		zlibLevel:              &zLevel,
-		zstdLevel:              &zLevel,
 	}
-	return o
 }
 
 // Auth add auth credential
-func (o *option) Auth(auth Auth) *option {
-	o.auth = &options.Credential{AuthSource: auth.DB, Username: auth.UserName, Password: auth.Password}
+func (o *options) Auth(db, username, password string) *options {
+	o.auth = &option.Credential{AuthSource: db, Username: username, Password: password}
 	return o
 }
 
 // Hosts set hosts of mongod instances
-func (o *option) Hosts(h []string) *option {
+func (o *options) Hosts(h []string) *options {
 	o.hosts = h
 	return o
 }
 
 // Pools change number of min and max pool of connections
-func (o *option) Pools(min, max uint64) *option {
+func (o *options) Pools(min, max uint64) *options {
 	o.minPoolSize = min
 	o.maxPoolSize = max
 	return o
 }
 
 // Replica set replication name
-func (o *option) Replica(name string) *option {
+func (o *options) Replica(name string) *options {
 	o.replicaSet = &name
 	return o
 }
 
 // RetryWrites retry write operations
-func (o *option) RetryWrites(rw bool) *option {
+func (o *options) RetryWrites(rw bool) *options {
 	o.retryWrites = rw
 	return o
 }
 
 // RetryReads retry read operations
-func (o *option) RetryReads(rr bool) *option {
+func (o *options) RetryReads(rr bool) *options {
 	o.retryReads = rr
 	return o
 }
 
 // ServerTimeout time to find available server to execute operation
-func (o *option) ServerTimeout(dur time.Duration) *option {
+func (o *options) ServerTimeout(dur time.Duration) *options {
 	o.serverSelectionTimeout = &dur
 	return o
 }
 
 // Timeout time to execute operation
-func (o *option) Timeout(dur time.Duration) *option {
+func (o *options) Timeout(dur time.Duration) *options {
 	o.timeout = &dur
 	return o
 }
 
 // Acknowledged is all mongo request will wait answer from mongod instance that operation was success or error
-func (o *option) Acknowledged(acknow bool) *option {
+func (o *options) Acknowledged(acknow bool) *options {
 	switch acknow {
 	case false:
 		o.writeConcern = writeconcern.Unacknowledged()
@@ -99,7 +108,7 @@ func (o *option) Acknowledged(acknow bool) *option {
 	return o
 }
 
-func (o *option) ReadConcern(level int) *option {
+func (o *options) ReadConcern(level int) *options {
 	switch level {
 	case 1:
 		o.readConcern = readconcern.Available()
@@ -109,8 +118,8 @@ func (o *option) ReadConcern(level int) *option {
 	return o
 }
 
-func (o *option) Connect(database string) (*mongo.Database, *mongo.Client, error) {
-	clOps := &options.ClientOptions{
+func (o *options) Connect(database string) (DB, error) {
+	clOps := &option.ClientOptions{
 		AppName:      o.appName,
 		Auth:         o.auth,
 		Hosts:        o.hosts,
@@ -122,20 +131,24 @@ func (o *option) Connect(database string) (*mongo.Database, *mongo.Client, error
 		RetryWrites:  &o.retryWrites,
 		Timeout:      o.timeout,
 		WriteConcern: o.writeConcern,
-		ZlibLevel:    o.zlibLevel,
-		ZstdLevel:    o.zstdLevel,
 	}
 
-	client, err := mongo.Connect(context.TODO(), clOps)
+	db := DB{
+		db:     nil,
+		client: nil,
+	}
+	var err error
+
+	db.client, err = mongo.Connect(context.TODO(), clOps)
 	if err != nil {
-		return nil, nil, err
+		return db, err
 	}
 
-	if err = client.Ping(context.TODO(), nil); err != nil {
-		return nil, nil, err
+	if err = db.client.Ping(context.TODO(), nil); err != nil {
+		return db, err
 	}
 
-	db := client.Database(database)
+	db.db = db.client.Database(database)
 
-	return db, client, err
+	return db, err
 }
