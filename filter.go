@@ -1,7 +1,8 @@
 package mongo
 
 import (
-	"gopkg.in/mgo.v2/bson"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"reflect"
 	"time"
 )
@@ -256,8 +257,8 @@ func (f *filter) Unwind(path string, preserveNullAndEmptyArrays bool) *filter {
 }
 
 // Use convert filter to mongo.Pipeline
-func (f *filter) Use() []bson.D {
-	return *f
+func (f *filter) Use() mongo.Pipeline {
+	return []bson.D(*f)
 }
 
 // Concat объединение двух фильтров в 1
