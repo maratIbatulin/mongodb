@@ -1,8 +1,9 @@
 package mongo
 
 import (
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"reflect"
 	"time"
 )
@@ -26,7 +27,7 @@ type Lookup struct {
 	Pipeline     *filter        `bson:"pipeline,omitempty"`
 }
 
-type Facet map[string]*filter
+type Facet map[string][]D
 
 type GeoNear struct {
 	DistanceField      string         `bson:"distanceField,omitempty"`
@@ -45,21 +46,21 @@ type Geo struct {
 	Coordinates []float64 `bson:"coordinates"`
 }
 
-type filter []bson.D
+type filter []D
 
 func Filter() *filter {
 	return &filter{}
 }
 
 // AddFields спецификация дополнительных полей, которые должны быть получены в результате запроса
-func (f *filter) AddFields(val map[string]interface{}) *filter {
-	*f = append(*f, bson.D{{"$addFields", val}})
+func (f *filter) AddFields(val D) *filter {
+	*f = append(*f, D{{"$addFields", val}})
 	return f
 }
 
 // Bucket распределение всех записей по нескольким категориям
-func (f *filter) Bucket(groupBy string, boundaries []any, def any, output map[string]interface{}) *filter {
-	*f = append(*f, bson.D{{"$bucket", bson.M{
+func (f *filter) Bucket(groupBy string, boundaries []any, def any, output D) *filter {
+	*f = append(*f, D{{"$bucket", bson.M{
 		"groupBy":    groupBy,
 		"boundaries": boundaries,
 		"default":    def,
@@ -69,8 +70,8 @@ func (f *filter) Bucket(groupBy string, boundaries []any, def any, output map[st
 }
 
 // BucketAuto распределение всех записей по конкретно заданному числу корзин
-func (f *filter) BucketAuto(groupBy string, buckets int32, output map[string]interface{}, granularity string) *filter {
-	*f = append(*f, bson.D{{"$bucketAuto", map[string]any{
+func (f *filter) BucketAuto(groupBy string, buckets int, output D, granularity string) *filter {
+	*f = append(*f, D{{"$bucketAuto", map[string]any{
 		"groupBy":     groupBy,
 		"buckets":     buckets,
 		"output":      output,
@@ -81,7 +82,7 @@ func (f *filter) BucketAuto(groupBy string, buckets int32, output map[string]int
 
 // Count считает количество записей и результат подсчёта выводит в выбранное поле
 func (f *filter) Count(field string) *filter {
-	*f = append(*f, bson.D{{"$count", field}})
+	*f = append(*f, D{{"$count", field}})
 	return f
 }
 
@@ -98,24 +99,24 @@ func (f *filter) Densify(field string, bounds []time.Time, step int, unit string
 	if len(partitionByFields) > 0 {
 		val["partitionByFields"] = partitionByFields
 	}
-	*f = append(*f, bson.D{{"$densify", val}})
+	*f = append(*f, D{{"$densify", val}})
 	return f
 }
 
 // Documents записи, которые не будут созданы в базе данных, однако пройдут процесс фильтрации
-func (f *filter) Documents(val ...map[string]interface{}) *filter {
-	*f = append(*f, bson.D{{"$documents", val}})
+func (f *filter) Documents(val ...D) *filter {
+	*f = append(*f, D{{"$documents", val}})
 	return f
 }
 
 // Facet изменяет значение поля/полей при их получении на установленное в фильтре
 func (f *filter) Facet(val Facet) *filter {
-	*f = append(*f, bson.D{{"$facet", val}})
+	*f = append(*f, D{{"$facet", val}})
 	return f
 }
 
 // Fill заполнение полей без значений в записях
-func (f *filter) Fill(sortBy map[string]interface{}, output map[string]interface{}, partition ...string) *filter {
+func (f *filter) Fill(sortBy D, output D, partition ...string) *filter {
 	val := map[string]any{
 		"sortBy": sortBy,
 		"output": output,
@@ -126,49 +127,50 @@ func (f *filter) Fill(sortBy map[string]interface{}, output map[string]interface
 	if len(partition) > 1 {
 		val["partitionByFields"] = partition
 	}
-	*f = append(*f, bson.D{{"$fill", val}})
+	*f = append(*f, D{{"$fill", val}})
 	return f
 }
 
 // GeoNear изменяет значение поля/полей при их получении на установленное в фильтре
 func (f *filter) GeoNear(geo GeoNear) *filter {
-	*f = append(*f, bson.D{{"$geoNear", geo}})
+	*f = append(*f, D{{"$geoNear", geo}})
 	return f
 }
 
 // GraphLookup позволяет построить граф связи двух полей с возможностью настройки глубины
 func (f *filter) GraphLookup(gl GraphLookup) *filter {
-	*f = append(*f, bson.D{{"$graphLookup", gl}})
+	*f = append(*f, D{{"$graphLookup", gl}})
 	return f
 }
 
 // Group объединение записей согласно некоторому набору параметров
-func (f *filter) Group(id any, fields map[string]interface{}) *filter {
-	fields["_id"] = id
-	*f = append(*f, bson.D{{"$group", fields}})
+func (f *filter) Group(id any, fields D) *filter {
+	fields = append(fields, primitive.E{Key: "_id", Value: id})
+	*f = append(*f, D{{"$group", fields}})
 	return f
 }
 
 // Limit ограничение количества записей, которые будут отданы
-func (f *filter) Limit(val int64) *filter {
-	*f = append(*f, bson.D{{"$limit", val}})
+func (f *filter) Limit(val int) *filter {
+	*f = append(*f, D{{"$limit", val}})
 	return f
 }
 
 // Lookup присоединение таблиц к результату запроса
 func (f *filter) Lookup(val Lookup) *filter {
-	*f = append(*f, bson.D{{"$lookup", val}})
+	*f = append(*f, D{{"$lookup", val}})
 	return f
 }
 
 // Match спецификация для поиска записей согласно заданному фильтру
-func (f *filter) Match(val map[string]interface{}) *filter {
-	*f = append(*f, bson.D{{"$match", val}})
+func (f *filter) Match(val D) *filter {
+	fmt.Println(val)
+	*f = append(*f, D{{"$match", val}})
 	return f
 }
 
 // Merge объединение записей из одной коллекции с записями из другой коллекции
-func (f *filter) Merge(db string, coll string, onMatch any, notMatch string, let map[string]interface{}, on ...string) *filter {
+func (f *filter) Merge(db string, coll string, onMatch any, notMatch string, let D, on ...string) *filter {
 	val := map[string]any{
 		"into": map[string]any{
 			"db":   db,
@@ -183,13 +185,13 @@ func (f *filter) Merge(db string, coll string, onMatch any, notMatch string, let
 	if (let != nil) && (!reflect.DeepEqual(let, bson.M{})) {
 		val["let"] = let
 	}
-	*f = append(*f, bson.D{{"$merge", val}})
+	*f = append(*f, D{{"$merge", val}})
 	return f
 }
 
 // Out сохраняет результат запроса в отдельную коллекцию mongo.(ЕСЛИ КОЛЛЕКЦИЯ УЖЕ СУЩЕсТВУЕТ, ТО ОН ЕЁ ЗАМЕНИТ)
 func (f *filter) Out(db string, coll string) *filter {
-	*f = append(*f, bson.D{{"$out", bson.M{
+	*f = append(*f, D{{"$out", bson.M{
 		"db":   db,
 		"coll": coll,
 	}}})
@@ -197,70 +199,70 @@ func (f *filter) Out(db string, coll string) *filter {
 }
 
 // Project спецификация полей, которые будут отображены
-func (f *filter) Project(val map[string]interface{}) *filter {
-	*f = append(*f, bson.D{{"$project", val}})
+func (f *filter) Project(val D) *filter {
+	*f = append(*f, D{{"$project", val}})
 	return f
 }
 
 // ReplaceRoot смена корня записи документа
 func (f *filter) ReplaceRoot(val string) *filter {
-	*f = append(*f, bson.D{{"$replaceRoot", map[string]any{"newRoot": val}}})
+	*f = append(*f, D{{"$replaceRoot", map[string]any{"newRoot": val}}})
 	return f
 }
 
 // Sample выборка случайных n записей из базы
-func (f *filter) Sample(size int64) *filter {
-	*f = append(*f, bson.D{{"$sample", map[string]any{
+func (f *filter) Sample(size int) *filter {
+	*f = append(*f, D{{"$sample", map[string]any{
 		"size": size,
 	}}})
 	return f
 }
 
 // Set изменяет значение поля/полей при их получении на установленное в фильтре
-func (f *filter) Set(val map[string]interface{}) *filter {
-	*f = append(*f, bson.D{{"$set", val}})
+func (f *filter) Set(val D) *filter {
+	*f = append(*f, D{{"$set", val}})
 	return f
 }
 
 // Skip пропуск первых n записей, которые нашлись согласно фильтру
-func (f *filter) Skip(val int64) *filter {
-	*f = append(*f, bson.D{{"$skip", val}})
+func (f *filter) Skip(val int) *filter {
+	*f = append(*f, D{{"$skip", val}})
 	return f
 }
 
 // Sort сортировка записей по полям в порядке убывания/возрастания
-func (f *filter) Sort(val map[string]interface{}) *filter {
-	*f = append(*f, bson.D{{"$sort", val}})
+func (f *filter) Sort(val D) *filter {
+	*f = append(*f, D{{"$sort", val}})
 	return f
 }
 
 // UnionWith объединение записей из одной коллекции в другую с возможностью использования pipeline при слиянии
-func (f *filter) UnionWith(coll string, pipeline map[string]interface{}) *filter {
+func (f *filter) UnionWith(coll string, pipeline D) *filter {
 	val := map[string]any{
 		"coll": coll,
 	}
 	if pipeline != nil && reflect.DeepEqual(pipeline, bson.M{}) {
 		val["pipeline"] = pipeline
 	}
-	*f = append(*f, bson.D{{"$unionWith", val}})
+	*f = append(*f, D{{"$unionWith", val}})
 	return f
 }
 
 // Unset удаление из вывода значений поля или полей
 func (f *filter) Unset(val ...string) *filter {
-	*f = append(*f, bson.D{{"$unset", val}})
+	*f = append(*f, D{{"$unset", val}})
 	return f
 }
 
 // Unwind разделение поля выводящего массив на несколько результатов
 func (f *filter) Unwind(path string, preserveNullAndEmptyArrays bool) *filter {
-	*f = append(*f, bson.D{{"$unwind", map[string]any{"path": path, "preserveNullAndEmptyArrays": preserveNullAndEmptyArrays}}})
+	*f = append(*f, D{{"$unwind", map[string]any{"path": path, "preserveNullAndEmptyArrays": preserveNullAndEmptyArrays}}})
 	return f
 }
 
 // Use convert filter to mongo.Pipeline
-func (f *filter) Use() mongo.Pipeline {
-	return []bson.D(*f)
+func (f *filter) Use() []D {
+	return *f
 }
 
 // Concat объединение двух фильтров в 1
