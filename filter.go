@@ -26,6 +26,8 @@ type Lookup struct {
 	Pipeline     *filter        `bson:"pipeline,omitempty"`
 }
 
+type Facet map[string]*filter
+
 type GeoNear struct {
 	DistanceField      string         `bson:"distanceField,omitempty"`
 	DistanceMultiplier float64        `bson:"distanceMultiplier,omitempty"`
@@ -107,7 +109,7 @@ func (f *filter) Documents(val ...map[string]interface{}) *filter {
 }
 
 // Facet изменяет значение поля/полей при их получении на установленное в фильтре
-func (f *filter) Facet(val map[string]mongo.Pipeline) *filter {
+func (f *filter) Facet(val Facet) *filter {
 	*f = append(*f, bson.D{{"$facet", val}})
 	return f
 }
