@@ -14,15 +14,15 @@ type collection struct {
 
 type Collection interface {
 	Aggregate(filter *filter, opts ...*option.AggregateOptions) (*mongo.Cursor, error)
-	FindOne(filter map[string]any, opts ...*option.FindOneOptions) *mongo.SingleResult
-	FindOneAndUpdate(filter map[string]any, update any, opts ...*option.FindOneAndUpdateOptions) *mongo.SingleResult
+	FindOne(filter D, opts ...*option.FindOneOptions) *mongo.SingleResult
+	FindOneAndUpdate(filter D, update any, opts ...*option.FindOneAndUpdateOptions) *mongo.SingleResult
 	InsertOne(body any, opts ...*option.InsertOneOptions) (*mongo.InsertOneResult, error)
 	InsertMany(body []any, opts ...*option.InsertManyOptions) (*mongo.InsertManyResult, error)
-	UpdateOne(filter map[string]any, update any, opts ...*option.UpdateOptions) (*mongo.UpdateResult, error)
-	UpdateMany(filter map[string]any, update any, opts ...*option.UpdateOptions) (*mongo.UpdateResult, error)
-	DeleteOne(filter map[string]any, opts ...*option.DeleteOptions) (*mongo.DeleteResult, error)
-	DeleteMany(filter map[string]any, opts ...*option.DeleteOptions) (*mongo.DeleteResult, error)
-	CountDocuments(filter map[string]any, opts ...*option.CountOptions) (int64, error)
+	UpdateOne(filter D, update any, opts ...*option.UpdateOptions) (*mongo.UpdateResult, error)
+	UpdateMany(filter D, update any, opts ...*option.UpdateOptions) (*mongo.UpdateResult, error)
+	DeleteOne(filter D, opts ...*option.DeleteOptions) (*mongo.DeleteResult, error)
+	DeleteMany(filter D, opts ...*option.DeleteOptions) (*mongo.DeleteResult, error)
+	CountDocuments(filter D, opts ...*option.CountOptions) (int64, error)
 	Collection() *mongo.Collection
 }
 
@@ -34,12 +34,12 @@ func (c collection) Aggregate(filter *filter, opts ...*option.AggregateOptions) 
 	return cursor, err
 }
 
-func (c collection) FindOne(filter map[string]any, opts ...*option.FindOneOptions) *mongo.SingleResult {
+func (c collection) FindOne(filter D, opts ...*option.FindOneOptions) *mongo.SingleResult {
 	return c.coll.FindOne(c.ctx, filter, opts...)
 }
 
-func (c collection) FindOneAndUpdate(filter map[string]any, update any, opts ...*option.FindOneAndUpdateOptions) *mongo.SingleResult {
-	return c.coll.FindOneAndUpdate(c.ctx, filter, map[string]any{"$set": update}, opts...)
+func (c collection) FindOneAndUpdate(filter D, update any, opts ...*option.FindOneAndUpdateOptions) *mongo.SingleResult {
+	return c.coll.FindOneAndUpdate(c.ctx, filter, D{{"$set", update}}, opts...)
 }
 
 func (c collection) InsertOne(body any, opts ...*option.InsertOneOptions) (*mongo.InsertOneResult, error) {
@@ -59,23 +59,23 @@ func (c collection) InsertMany(body []any, opts ...*option.InsertManyOptions) (*
 	return insertedId, err
 }
 
-func (c collection) UpdateOne(filter map[string]any, update any, opts ...*option.UpdateOptions) (*mongo.UpdateResult, error) {
-	upd, err := c.coll.UpdateOne(c.ctx, filter, map[string]any{"$set": update}, opts...)
+func (c collection) UpdateOne(filter D, update any, opts ...*option.UpdateOptions) (*mongo.UpdateResult, error) {
+	upd, err := c.coll.UpdateOne(c.ctx, filter, D{{"$set", update}}, opts...)
 	if errors.Is(err, mongo.ErrUnacknowledgedWrite) {
 		return upd, nil
 	}
 	return upd, err
 }
 
-func (c collection) UpdateMany(filter map[string]any, update any, opts ...*option.UpdateOptions) (*mongo.UpdateResult, error) {
-	upd, err := c.coll.UpdateMany(c.ctx, filter, map[string]any{"$set": update}, opts...)
+func (c collection) UpdateMany(filter D, update any, opts ...*option.UpdateOptions) (*mongo.UpdateResult, error) {
+	upd, err := c.coll.UpdateMany(c.ctx, filter, D{{"$set", update}}, opts...)
 	if errors.Is(err, mongo.ErrUnacknowledgedWrite) {
 		return upd, nil
 	}
 	return upd, err
 }
 
-func (c collection) DeleteOne(filter map[string]any, opts ...*option.DeleteOptions) (*mongo.DeleteResult, error) {
+func (c collection) DeleteOne(filter D, opts ...*option.DeleteOptions) (*mongo.DeleteResult, error) {
 	del, err := c.coll.DeleteOne(c.ctx, filter, opts...)
 	if errors.Is(err, mongo.ErrUnacknowledgedWrite) {
 		return del, nil
@@ -83,7 +83,7 @@ func (c collection) DeleteOne(filter map[string]any, opts ...*option.DeleteOptio
 	return del, err
 }
 
-func (c collection) DeleteMany(filter map[string]any, opts ...*option.DeleteOptions) (*mongo.DeleteResult, error) {
+func (c collection) DeleteMany(filter D, opts ...*option.DeleteOptions) (*mongo.DeleteResult, error) {
 	del, err := c.coll.DeleteMany(c.ctx, filter, opts...)
 	if errors.Is(err, mongo.ErrUnacknowledgedWrite) {
 		return del, nil
@@ -91,7 +91,7 @@ func (c collection) DeleteMany(filter map[string]any, opts ...*option.DeleteOpti
 	return del, err
 }
 
-func (c collection) CountDocuments(filter map[string]any, opts ...*option.CountOptions) (int64, error) {
+func (c collection) CountDocuments(filter D, opts ...*option.CountOptions) (int64, error) {
 	count, err := c.coll.CountDocuments(c.ctx, filter, opts...)
 	if errors.Is(err, mongo.ErrUnacknowledgedWrite) {
 		return count, nil
