@@ -9,3 +9,5 @@ type D primitive.D
 type M primitive.M
 
 type A primitive.A
+
+type E primitive.E
