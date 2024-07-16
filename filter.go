@@ -23,7 +23,7 @@ type Lookup struct {
 	Let          map[string]any `bson:"let,omitempty"`
 	LocalField   string         `bson:"localField,omitempty"`
 	ForeignField string         `bson:"foreignField,omitempty"`
-	Pipeline     filter         `bson:"pipeline,omitempty"`
+	Pipeline     *filter        `bson:"pipeline,omitempty"`
 }
 
 type GeoNear struct {
@@ -107,7 +107,7 @@ func (f *filter) Documents(val ...map[string]interface{}) *filter {
 }
 
 // Facet изменяет значение поля/полей при их получении на установленное в фильтре
-func (f *filter) Facet(val map[string]filter) *filter {
+func (f *filter) Facet(val map[string]mongo.Pipeline) *filter {
 	*f = append(*f, bson.D{{"$facet", val}})
 	return f
 }
