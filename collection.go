@@ -100,8 +100,8 @@ func (c collection) CountDocuments(filter D, opts ...*option.CountOptions) (int6
 	return count, err
 }
 
-func (c collection) Watch(filter D, opts ...*option.ChangeStreamOptions) (*mongo.ChangeStream, error) {
-	stream, err := c.coll.Watch(c.ctx, filter, opts...)
+func (c collection) Watch(filter *filter, opts ...*option.ChangeStreamOptions) (*mongo.ChangeStream, error) {
+	stream, err := c.coll.Watch(c.ctx, filter.Use(), opts...)
 	if errors.Is(err, mongo.ErrUnacknowledgedWrite) {
 		return stream, nil
 	}
