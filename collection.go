@@ -19,12 +19,12 @@ type Collection interface {
 	FindOneAndUpdate(filter D, update any, opts ...*option.FindOneAndUpdateOptions) *mongo.SingleResult
 	InsertOne(body any, opts ...*option.InsertOneOptions) (*mongo.InsertOneResult, error)
 	InsertMany(body []any, opts ...*option.InsertManyOptions) (*mongo.InsertManyResult, error)
-	UpdateOne(filter D, update any, opts ...*option.UpdateOptions) (*mongo.UpdateResult, error)
-	UpdateMany(filter D, update any, opts ...*option.UpdateOptions) (*mongo.UpdateResult, error)
+	UpdateOne(filter D, update D, opts ...*option.UpdateOptions) (*mongo.UpdateResult, error)
+	UpdateMany(filter D, update D, opts ...*option.UpdateOptions) (*mongo.UpdateResult, error)
 	DeleteOne(filter D, opts ...*option.DeleteOptions) (*mongo.DeleteResult, error)
 	DeleteMany(filter D, opts ...*option.DeleteOptions) (*mongo.DeleteResult, error)
 	CountDocuments(filter D, opts ...*option.CountOptions) (int64, error)
-	Watch(filter D, opts ...*option.ChangeStreamOptions) (*mongo.ChangeStream, error)
+	Watch(filter *filter, opts ...*option.ChangeStreamOptions) (*mongo.ChangeStream, error)
 	Collection() *mongo.Collection
 }
 
@@ -61,16 +61,24 @@ func (c collection) InsertMany(body []any, opts ...*option.InsertManyOptions) (*
 	return insertedId, err
 }
 
-func (c collection) UpdateOne(filter D, update any, opts ...*option.UpdateOptions) (*mongo.UpdateResult, error) {
-	upd, err := c.coll.UpdateOne(c.ctx, filter, bson.D{{"$set", update}}, opts...)
+func (c collection) UpdateOne(filter D, update D, opts ...*option.UpdateOptions) (*mongo.UpdateResult, error) {
+	bn := bson.D{}
+	for _, e := range update {
+		bn = append(bn, e)
+	}
+	upd, err := c.coll.UpdateOne(c.ctx, filter, bn, opts...)
 	if errors.Is(err, mongo.ErrUnacknowledgedWrite) {
 		return upd, nil
 	}
 	return upd, err
 }
 
-func (c collection) UpdateMany(filter D, update any, opts ...*option.UpdateOptions) (*mongo.UpdateResult, error) {
-	upd, err := c.coll.UpdateMany(c.ctx, filter, bson.D{{"$set", update}}, opts...)
+func (c collection) UpdateMany(filter D, update D, opts ...*option.UpdateOptions) (*mongo.UpdateResult, error) {
+	bn := bson.D{}
+	for _, e := range update {
+		bn = append(bn, e)
+	}
+	upd, err := c.coll.UpdateMany(c.ctx, filter, bn, opts...)
 	if errors.Is(err, mongo.ErrUnacknowledgedWrite) {
 		return upd, nil
 	}

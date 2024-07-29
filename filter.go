@@ -1,7 +1,6 @@
 package mongo
 
 import (
-	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"reflect"
@@ -164,7 +163,6 @@ func (f *filter) Lookup(val Lookup) *filter {
 
 // Match спецификация для поиска записей согласно заданному фильтру
 func (f *filter) Match(val D) *filter {
-	fmt.Println(val)
 	*f = append(*f, D{{"$match", val}})
 	return f
 }
