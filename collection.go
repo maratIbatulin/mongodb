@@ -3,6 +3,7 @@ package mongo
 import (
 	"context"
 	"errors"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	option "go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -61,7 +62,7 @@ func (c collection) InsertMany(body []any, opts ...*option.InsertManyOptions) (*
 }
 
 func (c collection) UpdateOne(filter D, update any, opts ...*option.UpdateOptions) (*mongo.UpdateResult, error) {
-	upd, err := c.coll.UpdateOne(c.ctx, filter, D{{"$set", update}}, opts...)
+	upd, err := c.coll.UpdateOne(c.ctx, filter, bson.D{{"$set", update}}, opts...)
 	if errors.Is(err, mongo.ErrUnacknowledgedWrite) {
 		return upd, nil
 	}
@@ -69,7 +70,7 @@ func (c collection) UpdateOne(filter D, update any, opts ...*option.UpdateOption
 }
 
 func (c collection) UpdateMany(filter D, update any, opts ...*option.UpdateOptions) (*mongo.UpdateResult, error) {
-	upd, err := c.coll.UpdateMany(c.ctx, filter, D{{"$set", update}}, opts...)
+	upd, err := c.coll.UpdateMany(c.ctx, filter, bson.D{{"$set", update}}, opts...)
 	if errors.Is(err, mongo.ErrUnacknowledgedWrite) {
 		return upd, nil
 	}
