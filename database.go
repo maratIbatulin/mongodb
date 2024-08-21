@@ -33,7 +33,7 @@ func (tx *Tx) Collection(name string) collection {
 
 func (d *DB) Transaction() (*Tx, error) {
 	sess, _ := d.client.StartSession(option.Session())
-	err := sess.StartTransaction(option.Transaction().SetWriteConcern(&writeconcern.WriteConcern{W: 1}).SetReadConcern(readconcern.Snapshot()))
+	err := sess.StartTransaction(option.Transaction().SetWriteConcern(&writeconcern.WriteConcern{W: 1}).SetReadConcern(readconcern.Majority()))
 	return &Tx{
 		db:   d.db,
 		sess: sess,
