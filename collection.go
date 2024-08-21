@@ -16,7 +16,7 @@ type collection struct {
 type Collection interface {
 	Aggregate(filter *filter, opts ...*option.AggregateOptions) (*mongo.Cursor, error)
 	FindOne(filter D, opts ...*option.FindOneOptions) *mongo.SingleResult
-	FindOneAndUpdate(filter D, update any, opts ...*option.FindOneAndUpdateOptions) *mongo.SingleResult
+	FindOneAndUpdate(filter D, update D, opts ...*option.FindOneAndUpdateOptions) *mongo.SingleResult
 	InsertOne(body any, opts ...*option.InsertOneOptions) (*mongo.InsertOneResult, error)
 	InsertMany(body []any, opts ...*option.InsertManyOptions) (*mongo.InsertManyResult, error)
 	UpdateOne(filter D, update D, opts ...*option.UpdateOptions) (*mongo.UpdateResult, error)
@@ -40,8 +40,12 @@ func (c collection) FindOne(filter D, opts ...*option.FindOneOptions) *mongo.Sin
 	return c.coll.FindOne(c.ctx, filter, opts...)
 }
 
-func (c collection) FindOneAndUpdate(filter D, update any, opts ...*option.FindOneAndUpdateOptions) *mongo.SingleResult {
-	return c.coll.FindOneAndUpdate(c.ctx, filter, D{{"$set", update}}, opts...)
+func (c collection) FindOneAndUpdate(filter D, update D, opts ...*option.FindOneAndUpdateOptions) *mongo.SingleResult {
+	bn := bson.D{}
+	for _, e := range update {
+		bn = append(bn, e)
+	}
+	return c.coll.FindOneAndUpdate(c.ctx, filter, bn, opts...)
 }
 
 func (c collection) InsertOne(body any, opts ...*option.InsertOneOptions) (*mongo.InsertOneResult, error) {
