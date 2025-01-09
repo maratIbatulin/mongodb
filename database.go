@@ -31,13 +31,17 @@ func (tx *Tx) Collection(name string) collection {
 	return collection{tx.db.Collection(name), tx.ctx}
 }
 
-func (d *DB) Transaction() (*Tx, error) {
+func (tx *Tx) Context() context.Context {
+	return tx.ctx
+}
+
+func (d *DB) Transaction(ctx context.Context) (*Tx, error) {
 	sess, _ := d.client.StartSession(option.Session())
 	err := sess.StartTransaction(option.Transaction().SetWriteConcern(&writeconcern.WriteConcern{W: 1}).SetReadConcern(readconcern.Majority()))
 	return &Tx{
 		db:   d.db,
 		sess: sess,
-		ctx:  mongo.NewSessionContext(context.TODO(), sess),
+		ctx:  mongo.NewSessionContext(ctx, sess),
 	}, err
 }
 
