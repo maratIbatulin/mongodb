@@ -10,6 +10,7 @@ import (
 
 type Database interface {
 	Collection(name string) collection
+	Transaction(ctx context.Context) (*Tx, error)
 }
 
 type DB struct {
