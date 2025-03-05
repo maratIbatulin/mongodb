@@ -222,6 +222,12 @@ func (f *filter) Set(val D) *filter {
 	return f
 }
 
+// SetWindowField поля с окошком
+func (f *filter) SetWindowField(val D) *filter {
+	*f = append(*f, D{{"$set", val}})
+	return f
+}
+
 // Skip пропуск первых n записей, которые нашлись согласно фильтру
 func (f *filter) Skip(val int) *filter {
 	*f = append(*f, D{{"$skip", val}})
