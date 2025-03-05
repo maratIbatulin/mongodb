@@ -224,7 +224,7 @@ func (f *filter) Set(val D) *filter {
 
 // SetWindowField поля с окошком
 func (f *filter) SetWindowField(val D) *filter {
-	*f = append(*f, D{{"$set", val}})
+	*f = append(*f, D{{"$setWindowFields", val}})
 	return f
 }
 
