@@ -17,6 +17,12 @@ type GraphLookup struct {
 	As               string `bson:"as"`
 }
 
+type SetWindowFields struct {
+	PartitionBy string `bson:"partitionBy"`
+	SortBy      D      `bson:"sortBy"`
+	Output      D      `bson:"output"`
+}
+
 type Lookup struct {
 	From         string         `bson:"from,omitempty"`
 	As           string         `bson:"as,omitempty"`
@@ -223,7 +229,7 @@ func (f *filter) Set(val D) *filter {
 }
 
 // SetWindowField поля с окошком
-func (f *filter) SetWindowField(val D) *filter {
+func (f *filter) SetWindowField(val SetWindowFields) *filter {
 	*f = append(*f, D{{"$setWindowFields", val}})
 	return f
 }
