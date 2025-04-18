@@ -1,36 +1,42 @@
+// Package mongo provides a MongoDB client implementation with configuration options.
 package mongo
 
 import (
 	"context"
+	"time"
+
 	"go.mongodb.org/mongo-driver/event"
 	"go.mongodb.org/mongo-driver/mongo"
 	option "go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readconcern"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
-	"time"
 )
 
+// options represents MongoDB connection configuration parameters.
 type options struct {
-	appName                *string
-	auth                   *option.Credential
-	hosts                  []string
-	maxPoolSize            uint64
-	minPoolSize            uint64
-	poolMonitor            *event.PoolMonitor
-	monitor                *event.CommandMonitor
-	readConcern            *readconcern.ReadConcern
-	replicaSet             *string
-	retryReads             bool
-	retryWrites            bool
-	serverSelectionTimeout *time.Duration
-	timeout                *time.Duration
-	writeConcern           *writeconcern.WriteConcern
+	appName                *string                    // Application name identifier
+	auth                   *option.Credential         // Authentication credentials
+	hosts                  []string                   // MongoDB server addresses
+	maxPoolSize            uint64                     // Maximum number of connections in the pool
+	minPoolSize            uint64                     // Minimum number of connections in the pool
+	poolMonitor            *event.PoolMonitor         // Pool event monitor
+	monitor                *event.CommandMonitor      // Command execution monitor
+	readConcern            *readconcern.ReadConcern   // Read concern level
+	replicaSet             *string                    // Replica set name
+	retryReads             bool                       // Whether to retry read operations
+	retryWrites            bool                       // Whether to retry write operations
+	serverSelectionTimeout *time.Duration             // Timeout for server selection
+	timeout                *time.Duration             // Operation timeout
+	writeConcern           *writeconcern.WriteConcern // Write concern level
 }
 
+// Default timeout duration for MongoDB operations.
 var timeout time.Duration = 10 * time.Second
 
-func Options(app string) options {
-	return options{
+// Options creates a new options instance with default values and the specified application name.
+// It provides fluent interface for MongoDB connection configuration.
+func Options(app string) *options {
+	return &options{
 		appName:                &app,
 		auth:                   nil,
 		hosts:                  nil,
@@ -48,56 +54,95 @@ func Options(app string) options {
 	}
 }
 
-// Auth add auth credential
+// Auth adds authentication credentials to the MongoDB connection options.
+// Parameters:
+//   - db: The authentication database name
+//   - username: The username for authentication
+//   - password: The password for authentication
+//
+// Returns the options instance for method chaining.
 func (o *options) Auth(db, username, password string) *options {
 	o.auth = &option.Credential{AuthSource: db, Username: username, Password: password}
 	return o
 }
 
-// Hosts set hosts of mongod instances
+// Hosts sets the MongoDB server addresses to connect to.
+// Parameter:
+//   - h: Slice of host addresses in the format "host:port"
+//
+// Returns the options instance for method chaining.
 func (o *options) Hosts(h []string) *options {
 	o.hosts = h
 	return o
 }
 
-// Pools change number of min and max pool of connections
+// Pools configures the connection pool size limits.
+// Parameters:
+//   - min: Minimum number of connections to maintain in the pool
+//   - max: Maximum number of connections allowed in the pool
+//
+// Returns the options instance for method chaining.
 func (o *options) Pools(min, max uint64) *options {
 	o.minPoolSize = min
 	o.maxPoolSize = max
 	return o
 }
 
-// Replica set replication name
+// Replica sets the replica set name for the MongoDB deployment.
+// Parameter:
+//   - name: The name of the replica set
+//
+// Returns the options instance for method chaining.
 func (o *options) Replica(name string) *options {
 	o.replicaSet = &name
 	return o
 }
 
-// RetryWrites retry write operations
+// RetryWrites configures whether write operations should be retried on certain errors.
+// Parameter:
+//   - rw: Boolean indicating if writes should be retried
+//
+// Returns the options instance for method chaining.
 func (o *options) RetryWrites(rw bool) *options {
 	o.retryWrites = rw
 	return o
 }
 
-// RetryReads retry read operations
+// RetryReads configures whether read operations should be retried on certain errors.
+// Parameter:
+//   - rr: Boolean indicating if reads should be retried
+//
+// Returns the options instance for method chaining.
 func (o *options) RetryReads(rr bool) *options {
 	o.retryReads = rr
 	return o
 }
 
-// ServerTimeout time to find available server to execute operation
+// ServerTimeout sets the timeout for server selection operations.
+// Parameter:
+//   - dur: Duration for server selection timeout
+//
+// Returns the options instance for method chaining.
 func (o *options) ServerTimeout(dur time.Duration) *options {
 	o.serverSelectionTimeout = &dur
 	return o
 }
 
-// Timeout time to execute operation
+// Timeout sets the timeout for MongoDB operations.
+// Parameter:
+//   - dur: Duration for operation timeout
+//
+// Returns the options instance for method chaining.
 func (o *options) Timeout(dur time.Duration) *options {
 	o.timeout = &dur
 	return o
 }
 
-// Acknowledged is all mongo request will wait answer from mongod instance that operation was success or error
+// Acknowledged configures whether write operations require acknowledgment from the server.
+// Parameter:
+//   - acknow: If true, requires server acknowledgment (W1); if false, uses unacknowledged writes
+//
+// Returns the options instance for method chaining.
 func (o *options) Acknowledged(acknow bool) *options {
 	switch acknow {
 	case false:
@@ -108,6 +153,11 @@ func (o *options) Acknowledged(acknow bool) *options {
 	return o
 }
 
+// ReadConcern sets the read concern level for MongoDB read operations.
+// Parameter:
+//   - level: Integer representing the read concern level (1=Available, 2=Majority)
+//
+// Returns the options instance for method chaining.
 func (o *options) ReadConcern(level int) *options {
 	switch level {
 	case 1:
@@ -118,6 +168,13 @@ func (o *options) ReadConcern(level int) *options {
 	return o
 }
 
+// Connect establishes a connection to the MongoDB database using the configured options.
+// Parameter:
+//   - database: The name of the database to connect to
+//
+// Returns:
+//   - DB: A database connection object
+//   - error: Any error encountered during connection
 func (o *options) Connect(database string) (DB, error) {
 	clOps := &option.ClientOptions{
 		AppName:      o.appName,
