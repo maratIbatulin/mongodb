@@ -1,4 +1,4 @@
-module github.com/maratIbatulin/mongodb/v2
+module github.com/maratIbatulin/mongodb/v2.0.1
 
 go 1.19
 
