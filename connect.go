@@ -14,7 +14,8 @@ import (
 
 // options represents MongoDB connection configuration parameters.
 type options struct {
-	appName                *string                    // Application name identifier
+	appName                *string // Application name identifier
+	direct                 *bool
 	auth                   *option.Credential         // Authentication credentials
 	hosts                  []string                   // MongoDB server addresses
 	maxPoolSize            uint64                     // Maximum number of connections in the pool
@@ -40,6 +41,7 @@ func Options(app string) *options {
 		appName:                &app,
 		auth:                   nil,
 		hosts:                  nil,
+		direct:                 nil,
 		maxPoolSize:            100,
 		minPoolSize:            10,
 		poolMonitor:            nil,
@@ -168,6 +170,11 @@ func (o *options) ReadConcern(level int) *options {
 	return o
 }
 
+func (o *options) Direct(in bool) *options {
+	o.direct = &in
+	return o
+}
+
 // Connect establishes a connection to the MongoDB database using the configured options.
 // Parameter:
 //   - database: The name of the database to connect to
@@ -188,6 +195,7 @@ func (o *options) Connect(database string) (DB, error) {
 		RetryWrites:  &o.retryWrites,
 		Timeout:      o.timeout,
 		WriteConcern: o.writeConcern,
+		Direct:       o.direct,
 	}
 
 	db := DB{
